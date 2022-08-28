@@ -1,0 +1,104 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+Explanation: This is a sample bootstrapping CLI base on objects
+
+Usage:
+   $ python  samplecli <verb> <object> [ options ]
+
+Style:
+   Google Python Style Guide:
+   http://google.github.io/styleguide/pyguide.html
+
+    @name           samplecli
+    @version        0.9.0
+    @author-name    Wayne Schmidt
+    @author-email   wschmidt@sumologic.com
+    @license-name   Apache 2.0
+    @license-url    https://www.apache.org/licenses/LICENSE-2.0
+"""
+
+__version__ = 0.90
+__author__ = "Wayne Schmidt (wschmidt@sumologic.com)"
+
+import argparse
+import os
+import sys
+import datetime
+import importlib
+import pprint
+
+sys.dont_write_bytecode = 1
+
+PARSER = argparse.ArgumentParser(description="""
+
+A Sumo Logic command line driven way to manage an organization
+
+""")
+
+PARSER.add_argument('-a', metavar='<apiname>', dest='apiname', help='specify API name')
+PARSER.add_argument('-k', metavar='<apikey>', dest='apikey', help='specify API key')
+PARSER.add_argument('-s', metavar='<site>', dest='site', help='specify site')
+PARSER.add_argument('-o', metavar='<orgid>', dest='orgid', help='specify orgid')
+PARSER.add_argument('-c', metavar='<config>', dest='config', help='specify config file')
+
+PARSER.add_argument(metavar='<verb>', dest='verb', help='specify verb')
+PARSER.add_argument(metavar='<object>', dest='object', help='specify object')
+
+ARGS = PARSER.parse_args()
+
+RIGHTNOW = datetime.datetime.now()
+DSTAMP = RIGHTNOW.strftime("%Y%m%d")
+TSTAMP = RIGHTNOW.strftime("%H%M%S")
+
+SCRIPTDIR = os.path.dirname(os.path.abspath(__file__))
+REFETCDIR = os.path.abspath(SCRIPTDIR.replace('bin', 'etc'))
+
+RIGHTNOW = datetime.datetime.now()
+DSTAMP = RIGHTNOW.strftime("%Y%m%d")
+TSTAMP = RIGHTNOW.strftime("%H%M%S")
+
+def prepare_lib_path():
+
+    """
+    This bootstraps the path so subsequent importlib or imports can work.
+    It gets the absolute path of the script in bin, and then returns the grand-parent.
+    Armed with that grand-parent directory, it lists all subdirs and appends them.
+
+    The directory structure is setup so that all of the directories in lib are packages.
+    As a result, an 'import lib' can be used as well, though not recommended
+    """
+
+    my_folder = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    for dirpath, _dirs, _files in os.walk(my_folder):
+        sys.path.append(os.path.abspath(dirpath))
+
+def main():
+    """
+    This is the general driver of the script and builds the subroutines to call.
+    Currently this will call a subroutine in both verb and oobject to prepare
+    """
+
+    prepare_lib_path()
+
+    ### setupv = 'import' + ' ' + 'lib' + '.' + 'verbs' + '.' + ARGS.verb
+    ### setupo = 'import' + ' ' + 'lib' + '.' + 'objects' + '.' + ARGS.object
+    ### exec(setupv)
+    ### exec(setupo)
+
+    full_module_name = "lib." + "objects." + ARGS.object
+    mymodule = importlib.import_module(full_module_name)
+    mymodule.debug()
+
+    full_module_name = "lib." + "verbs." + ARGS.verb
+    mymodule = importlib.import_module(full_module_name)
+    mymodule.debug()
+
+    for mymodule in sys.modules.keys():
+        print(f'key: {mymodule}')
+    ### print(subroutine)
+    ### eval(setupv)()
+
+if __name__ == '__main__':
+    main()
